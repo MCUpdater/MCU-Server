@@ -10,9 +10,11 @@ import org.mcupdater.commands.ICommandWrapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
-public class MCUServer implements ICommandWrapper {
-	private final static int NAG_RATE = 3;	// how many errors do we remind them about 'help'?
-	private final static int CONSOLE_WIDTH = 80;	// how wide are we assuming their console is?
+public class MCUServer {
+	public static final String VERSION = "0.0";
+	
+	private static final int NAG_RATE = 3;	// how many errors do we remind them about 'help'?
+	private static final int CONSOLE_WIDTH = 80;	// how wide are we assuming their console is?
 	
 	private static MCUServer _server;
 	
@@ -29,6 +31,7 @@ public class MCUServer implements ICommandWrapper {
 		}
 		
 		_server = new MCUServer(args, c);
+		_server.init();
 		_server.start();
 	}
 	
@@ -36,9 +39,12 @@ public class MCUServer implements ICommandWrapper {
 		// TODO: parse arguments
 		console = c;
 		commands = Maps.newTreeMap();
-		
+	}
+	
+	protected void init() {
 		// register all commands
-		registerCommand("help", this);
+		registerCommand("help", HelpCommand.class);
+		registerCommand("quit", QuitCommand.class);
 	}
 	
 	public static MCUServer getServer() {
@@ -64,6 +70,7 @@ public class MCUServer implements ICommandWrapper {
 			registerCommand(cmd, wrapper);
 		} catch (InstantiationException | IllegalAccessException e) {
 			writeCritical(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	
@@ -72,11 +79,13 @@ public class MCUServer implements ICommandWrapper {
 	}
 	
 	protected void start() {
+		write("MCUpdater Server v"+VERSION);
+		
 		running = true;
 		int err_count = 0;
 		while( running ) {
 			String cmd = console.readLine("> ");
-			if( !parseCommand(cmd) ) {
+			if( !cmd.isEmpty() && !parseCommand(cmd) ) {
 				writeError("Unknown command.");
 				// nag
 				++err_count;
@@ -88,7 +97,7 @@ public class MCUServer implements ICommandWrapper {
 	}
 	
 	public void stop() {
-		write("Got stop signal, attempting to stop.");
+		//write("Got stop signal, attempting to stop.");
 		running = false;
 	}
 	
@@ -111,32 +120,52 @@ public class MCUServer implements ICommandWrapper {
 		return false;
 	}
 
-	////////// implement the help command here because we're both cheatsy and lazy
-	public boolean run(String args) {
-		if( !args.isEmpty() ) {
-			ICommandWrapper command = commands.get(args);
-			if( command != null ) {
-				write(command.help());
+	public class HelpCommand implements ICommandWrapper {
+		public HelpCommand() {}
+		
+		public boolean run(String args) {
+			if( !args.isEmpty() ) {
+				ICommandWrapper command = commands.get(args);
+				if( command != null ) {
+					write(command.help());
+				} else {
+					writeError("No such command '"+args+"'");
+					return false;
+				}
 			} else {
-				writeError("No such command '"+args+"'");
-				return false;
+				write("The following commands are available:\n");
+				// generate our list of registered commands to display help for
+				for( Map.Entry<String, ICommandWrapper> entry : commands.entrySet()) {
+					printf("  %-10s  %s\n",entry.getKey(),entry.getValue().shortHelp());
+				}
+				write("\nAdditionally, you can type 'help <command>' for more information on a given command.");
 			}
-		} else {
-			write("The following commands are available:\n");
-			// generate our list of registered commands to display help for
-			for( Map.Entry<String, ICommandWrapper> entry : commands.entrySet()) {
-				printf("  %10s  %s\n",entry.getKey(),entry.getValue().shortHelp());
-			}
-			write("\nAdditionally, you can type 'help <command>' for more information on a given command.");
+			return true;
 		}
-		return true;
+		
+		public String shortHelp() {
+			return "This command";
+		}
+		
+		public String help() {
+			return "Type 'help' for a list of commands available, or 'help <command>' for more information on a given command.";
+		}
 	}
 	
-	public String shortHelp() {
-		return "This command";
-	}
-	
-	public String help() {
-		return "Type 'help' for a list of commands available, or 'help <command>' for more information on a given command.";
+	public class QuitCommand implements ICommandWrapper {
+		public QuitCommand() {}
+		
+		public boolean run(String args) {
+			stop();
+			return true;
+		}
+
+		public String help() {
+			return "Quit MCU-Server. NB: This will shut down any running Minecraft server instance.";
+		}
+
+		public String shortHelp() {
+			return "Quit";
+		}		
 	}
 }
