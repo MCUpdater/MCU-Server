@@ -94,6 +94,10 @@ public class MCUServer {
 				}
 			}
 		}
+		
+		// TODO: cleanly shutdown child process
+		
+		write("Goodbye.\n");
 	}
 	
 	public void stop() {
