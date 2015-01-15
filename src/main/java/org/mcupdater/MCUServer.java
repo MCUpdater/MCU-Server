@@ -85,7 +85,7 @@ public class MCUServer {
 		int err_count = 0;
 		while( running ) {
 			String cmd = console.readLine("> ");
-			if( !cmd.isEmpty() && !parseCommand(cmd) ) {
+			if( !Strings.isNullOrEmpty(cmd) && !parseCommand(cmd) ) {
 				writeError("Unknown command.");
 				// nag
 				++err_count;
@@ -96,8 +96,7 @@ public class MCUServer {
 		}
 		
 		// TODO: cleanly shutdown child process
-		
-		write("Goodbye.\n");
+		write("Goodbye.");
 	}
 	
 	public void stop() {
