@@ -43,8 +43,8 @@ public class MCUServer {
 	
 	protected void init() {
 		// register all commands
-		registerCommand("help", HelpCommand.class);
-		registerCommand("quit", QuitCommand.class);
+		registerCommand("help", new HelpCommand());
+		registerCommand("quit", new QuitCommand());
 	}
 	
 	public static MCUServer getServer() {
