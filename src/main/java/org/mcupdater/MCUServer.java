@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.apache.commons.lang3.text.WordUtils;
-import org.mcupdater.commands.ICommandWrapper;
+import org.mcupdater.commands.*;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -45,6 +45,9 @@ public class MCUServer {
 		// register all commands
 		registerCommand("help", new HelpCommand());
 		registerCommand("quit", new QuitCommand());
+		
+		registerCommand("start", new StartCommand());
+		registerCommand("stop", new StopCommand());
 	}
 	
 	public static MCUServer getServer() {
@@ -62,16 +65,6 @@ public class MCUServer {
 	}
 	public static void writeCritical(String str) {
 		write("[!!] "+str);
-	}
-	
-	public void registerCommand(String cmd, Class<?extends ICommandWrapper> clazz) {
-		try {
-			ICommandWrapper wrapper = clazz.newInstance();
-			registerCommand(cmd, wrapper);
-		} catch (InstantiationException | IllegalAccessException e) {
-			writeCritical(e.getMessage());
-			e.printStackTrace();
-		}
 	}
 	
 	public void registerCommand(String cmd, ICommandWrapper wrapper) {
