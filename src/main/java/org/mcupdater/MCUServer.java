@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.apache.commons.lang3.text.WordUtils;
+import org.mcupdater.api.Version;
 import org.mcupdater.commands.*;
 
 import com.google.common.base.Strings;
@@ -12,8 +13,6 @@ import com.google.common.collect.Maps;
 import org.mcupdater.server.Config;
 
 public class MCUServer {
-	public static final String VERSION = "0.0";
-	
 	private static final int NAG_RATE = 3;	// how many errors do we remind them about 'help'?
 	private static final int CONSOLE_WIDTH = 80;	// how wide are we assuming their console is?
 	
@@ -30,7 +29,7 @@ public class MCUServer {
 			System.err.println("Non-interactive session, unable to attach to console. Aborting.");
 			System.exit(1);
 		}
-		
+
 		_server = new MCUServer(args, c);
 		_server.init();
 		_server.start();
@@ -77,7 +76,7 @@ public class MCUServer {
 	}
 	
 	protected void start() {
-		write("MCUpdater Server v"+VERSION);
+		write("MCUpdater Server v"+ Version.VERSION);
 		
 		running = true;
 		int err_count = 0;
