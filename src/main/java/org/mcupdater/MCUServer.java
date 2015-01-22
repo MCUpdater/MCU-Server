@@ -9,6 +9,7 @@ import org.mcupdater.commands.*;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import org.mcupdater.server.Config;
 
 public class MCUServer {
 	public static final String VERSION = "0.0";
@@ -42,6 +43,10 @@ public class MCUServer {
 	}
 	
 	protected void init() {
+        // read config file
+        Config.load();
+        Config.save();
+
 		// register all commands
 		registerCommand("help", new HelpCommand());
 		registerCommand("quit", new QuitCommand());

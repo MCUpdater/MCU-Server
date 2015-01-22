@@ -5,3 +5,4 @@ bin/
 jar-in-jar-loader.zip
 mcu-server.jar
 /build
+*.iml
