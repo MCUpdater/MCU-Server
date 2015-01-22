@@ -17,6 +17,8 @@ public class Config {
     public static String forgeJarPath = "";
     public static boolean autoStart = false;
 
+    public static boolean debug = false;
+
     public static final String CONFIG_FILENAME = "mcuserver.properties";
 
     private Properties props;
@@ -39,15 +41,26 @@ public class Config {
         if( !file.exists() ) {
             try {
                 file.createNewFile();
-                props.load(new FileReader(file));
             } catch (IOException e) {
                 MCUServer.writeError("Unable to create new config file.");
             }
+        }
+        try {
+            props.load(new FileReader(file));
+        } catch (IOException e) {
+            MCUServer.writeError("Unable to read config file.");
         }
 
         serverPackURL = props.getProperty("serverPackURL", serverPackURL);
         forgeJarPath = props.getProperty("forgeJarPath", forgeJarPath);
         autoStart = Boolean.parseBoolean(props.getProperty("autoStart", Boolean.toString(autoStart)));
+        debug = Boolean.parseBoolean(props.getProperty("debug", Boolean.toString(debug)));
+
+        if( debug ) {
+            MCUServer.write("[::] serverPackURL = " + serverPackURL);
+            MCUServer.write("[::] forgeJarPath = " + forgeJarPath);
+            MCUServer.write("[::] autoStart = " + autoStart);
+        }
     }
 
     public static void save() {

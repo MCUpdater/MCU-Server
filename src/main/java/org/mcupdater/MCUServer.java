@@ -76,10 +76,17 @@ public class MCUServer {
 	}
 	
 	protected void start() {
-		write("MCUpdater Server v"+ Version.VERSION);
-		
-		running = true;
-		int err_count = 0;
+		write("MCUpdater Server "+ Version.VERSION);
+
+        // autostart support
+        if( Config.autoStart ) {
+            write("Autostarting server...");
+            // parseCommand("update");
+            parseCommand("start");
+        }
+
+        running = true;
+        int err_count = 0;
 		while( running ) {
 			String cmd = console.readLine("> ");
 			if( !Strings.isNullOrEmpty(cmd) && !parseCommand(cmd) ) {
