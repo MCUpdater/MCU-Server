@@ -1,5 +1,7 @@
 package org.mcupdater.server;
 
+import com.google.common.collect.Maps;
+import org.apache.commons.lang3.tuple.Pair;
 import org.mcupdater.MCUServer;
 import org.mcupdater.api.Version;
 
@@ -7,15 +9,23 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 
 /**
  * Created by alauritzen on 1/22/15.
  */
 public class Config {
-    public static String serverPackURL = "https://files.mcupdater.com/example/SamplePack.xml";
-    public static String forgeJarPath = "";
-    public static boolean autoStart = false;
+    private static final Map<String, Object> defaults;
+    static {
+        defaults = Maps.newHashMap();
+
+        defaults.put("serverPackURL", "https://files.mcupdater.com/example/SamplePack.xml");
+        defaults.put("forgeJarPath", "");
+        defaults.put("autoStart", Boolean.valueOf(false));
+
+        defaults.put("debug", Boolean.valueOf(false));
+    }
 
     public static boolean debug = false;
 
@@ -29,6 +39,20 @@ public class Config {
     private Config() {
         props = new Properties();
         file = new File(CONFIG_FILENAME);
+    }
+
+    public static void set(String key, String value) {
+        INSTANCE.props.setProperty(key, value);
+    }
+    public static String get(String key) {
+        return INSTANCE.props.getProperty(key);
+    }
+
+    public static void setBool(String key, boolean value) {
+        set(key, Boolean.toString(value));
+    }
+    public static boolean getBool(String key) {
+        return Boolean.parseBoolean(get(key));
     }
 
     public static void load() {
@@ -47,19 +71,27 @@ public class Config {
         }
         try {
             props.load(new FileReader(file));
+            for( Map.Entry<String,Object> key : defaults.entrySet() ) {
+                if( props.containsKey(key.getKey()) ) {
+                    continue;
+                }
+                if( key.getValue() instanceof Boolean ) {
+                    setBool(key.getKey(), (Boolean)key.getValue());
+                } else {
+                    set(key.getKey(), (String)key.getValue());
+                }
+            }
         } catch (IOException e) {
             MCUServer.writeError("Unable to read config file.");
         }
 
-        serverPackURL = props.getProperty("serverPackURL", serverPackURL);
-        forgeJarPath = props.getProperty("forgeJarPath", forgeJarPath);
-        autoStart = Boolean.parseBoolean(props.getProperty("autoStart", Boolean.toString(autoStart)));
-        debug = Boolean.parseBoolean(props.getProperty("debug", Boolean.toString(debug)));
-
+        debug = getBool("debug");
         if( debug ) {
-            MCUServer.write("[::] serverPackURL = " + serverPackURL);
-            MCUServer.write("[::] forgeJarPath = " + forgeJarPath);
-            MCUServer.write("[::] autoStart = " + autoStart);
+            for( String key : defaults.keySet() ) {
+                final String val = get(key);
+                final boolean isDefault = val.equals(defaults.get(key).toString());
+                MCUServer.write("["+(isDefault?"::":"++")+"] "+key+" = "+val);
+            }
         }
     }
 
@@ -67,10 +99,6 @@ public class Config {
         INSTANCE._save();
     }
     private void _save() {
-        props.setProperty("serverPackURL", serverPackURL);
-        props.setProperty("forgeJarPath", forgeJarPath);
-        props.setProperty("autoStart", Boolean.toString(autoStart));
-
         try {
             props.store(new FileWriter(file), "MCUServer settings, "+ Version.VERSION);
         } catch (IOException e) {

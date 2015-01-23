@@ -82,7 +82,7 @@ public class MCUServer {
 		write("MCUpdater Server "+ Version.VERSION);
 
         // autostart support
-        if( Config.autoStart ) {
+        if( Config.getBool("autoStart") ) {
             write("Autostarting server...");
             // parseCommand("update");
             parseCommand("start");
