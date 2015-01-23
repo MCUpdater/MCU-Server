@@ -1,7 +1,6 @@
 package org.mcupdater.server;
 
 import com.google.common.collect.Maps;
-import org.apache.commons.lang3.tuple.Pair;
 import org.mcupdater.MCUServer;
 import org.mcupdater.api.Version;
 
@@ -22,9 +21,9 @@ public class Config {
 
         defaults.put("serverPackURL", "https://files.mcupdater.com/example/SamplePack.xml");
         defaults.put("forgeJarPath", "");
-        defaults.put("autoStart", Boolean.valueOf(false));
+        defaults.put("autoStart", false);
 
-        defaults.put("debug", Boolean.valueOf(false));
+        defaults.put("debug", false);
     }
 
     public static boolean debug = false;
@@ -55,6 +54,13 @@ public class Config {
         return Boolean.parseBoolean(get(key));
     }
 
+    public static boolean isOption(String key) {
+        return defaults.containsKey(key);
+    }
+    public static boolean isBoolean(String key) {
+        return defaults.get(key) instanceof Boolean;
+    }
+
     public static void load() {
         if (INSTANCE == null)
             INSTANCE = new Config();
@@ -64,7 +70,10 @@ public class Config {
     private void _load() {
         if( !file.exists() ) {
             try {
-                file.createNewFile();
+                boolean success = file.createNewFile();
+                if( success ) {
+                    MCUServer.write("Created default config file.");
+                }
             } catch (IOException e) {
                 MCUServer.writeError("Unable to create new config file.");
             }

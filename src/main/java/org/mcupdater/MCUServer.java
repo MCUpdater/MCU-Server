@@ -92,6 +92,7 @@ public class MCUServer {
         int err_count = 0;
 		while( running ) {
 			String cmd = console.readLine("> ");
+            // TODO: allow parseCommand to return false for errors
 			if( !Strings.isNullOrEmpty(cmd) && !parseCommand(cmd) ) {
 				writeError("Unknown command.");
 				// nag
@@ -124,10 +125,7 @@ public class MCUServer {
 		command = command.toLowerCase();
 		params = Strings.nullToEmpty(params).trim();
 		
-		if( commands.containsKey(command) ) {
-			return commands.get(command).run(params);
-		}
-		return false;
+		return commands.containsKey(command) && commands.get(command).run(params);
 	}
 
 	public class HelpCommand implements ICommandWrapper {
