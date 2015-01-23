@@ -4,6 +4,7 @@ import java.io.Console;
 import java.util.Map;
 import java.util.SortedMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 import org.mcupdater.api.Version;
 import org.mcupdater.commands.*;
@@ -52,6 +53,8 @@ public class MCUServer {
 		
 		registerCommand("start", new StartCommand());
 		registerCommand("stop", new StopCommand());
+
+        registerCommand("set", new SetCommand());
 	}
 	
 	public static MCUServer getServer() {
@@ -134,6 +137,8 @@ public class MCUServer {
 			if( !args.isEmpty() ) {
 				ICommandWrapper command = commands.get(args);
 				if( command != null ) {
+                    final String hr = "+" + StringUtils.leftPad("", args.length()+2, "-") + "+";
+                    write(hr + "\n| "+args+" |\n" + hr);
 					write(command.help());
 				} else {
 					writeError("No such command '"+args+"'");
