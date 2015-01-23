@@ -1,6 +1,7 @@
 package org.mcupdater;
 
 import java.io.Console;
+import java.io.File;
 import java.util.Map;
 import java.util.SortedMap;
 
@@ -12,12 +13,14 @@ import org.mcupdater.commands.*;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import org.mcupdater.server.Config;
+import org.mcupdater.util.MCUpdater;
 
 public class MCUServer {
 	private static final int NAG_RATE = 3;	// how many errors do we remind them about 'help'?
 	private static final int CONSOLE_WIDTH = 80;	// how wide are we assuming their console is?
 	
 	private static MCUServer _server;
+    public MCUpdater mcu;
 	
 	private boolean running;
 	private Console console;
@@ -45,6 +48,19 @@ public class MCUServer {
 	protected void init() {
         // read config file
         Config.load();
+
+        // initialize our MCU instance
+        String mcuPath = Config.get("mcuPath");
+        if( Strings.isNullOrEmpty(mcuPath) ) {
+            mcu = MCUpdater.getInstance();
+        } else {
+            File mcuPathFile = new File(mcuPath);
+            mcu = MCUpdater.getInstance(mcuPathFile);
+        }
+        mcuPath = mcu.getArchiveFolder().toAbsolutePath().toString();
+        Config.set("mcuPath", mcuPath);
+
+        // save config file
         Config.save();
 
 		// register all commands
@@ -92,16 +108,23 @@ public class MCUServer {
         int err_count = 0;
 		while( running ) {
 			String cmd = console.readLine("> ");
-            // TODO: allow parseCommand to return false for errors
-			if( !Strings.isNullOrEmpty(cmd) && !parseCommand(cmd) ) {
+            if( Strings.isNullOrEmpty(cmd) ) continue;
+
+			if( !commands.containsKey(cmd) ) {
 				writeError("Unknown command.");
-				// nag
 				++err_count;
-				if( err_count % NAG_RATE == 0 ) {
-					write("[::] Type 'help' for a list of valid commands.");
-				}
-			}
-		}
+			} else {
+                boolean success = parseCommand(cmd);
+                if( !success ) {
+                    ++err_count;
+                }
+            }
+
+            // nag
+            if( err_count > 0 && err_count % NAG_RATE == 0 ) {
+                write("[::] Type 'help' for a list of valid commands.");
+            }
+        }
 		
 		// TODO: cleanly shutdown child process
 		write("Goodbye.");

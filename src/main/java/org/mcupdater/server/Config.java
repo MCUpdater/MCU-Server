@@ -21,6 +21,7 @@ public class Config {
 
         defaults.put("serverPackURL", "https://files.mcupdater.com/example/SamplePack.xml");
         defaults.put("forgeJarPath", "");
+        defaults.put("mcuPath", "");
         defaults.put("autoStart", false);
 
         defaults.put("debug", false);
