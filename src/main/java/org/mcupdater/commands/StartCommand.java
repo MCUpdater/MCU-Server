@@ -1,7 +1,6 @@
 package org.mcupdater.commands;
 
 import com.google.common.base.Strings;
-import org.apache.commons.lang3.StringUtils;
 import org.mcupdater.MCUServer;
 import org.mcupdater.server.Config;
 
