@@ -1,0 +1,29 @@
+plugins {
+    id 'workspace.java-application-conventions'
+}
+
+dependencies {
+    implementation project(':MCU-API')
+    implementation project(':MCU-DownloadLib')
+    implementation 'commons-cli:commons-cli:20040117.000000'
+    implementation 'jline:jline:2.14.6'
+}
+
+version = sharedVersion
+
+jar {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+    from configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    manifest {
+        attributes "Main-Class": 'org.mcupdater.MCUServer'
+    }
+}
+
+repositories {
+    maven {
+        url 'https://repo.maven.apache.org/maven2'
+        name 'Maven Central'
+    }
+}
+
+jar.setDependsOn([':MCU-API:jar',':MCU-DownloadLib:jar'])
